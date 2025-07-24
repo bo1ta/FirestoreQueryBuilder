@@ -34,7 +34,7 @@ public class QueryBuilder<T: Queryable> {
 // MARK: - Filtering methods
 
 extension QueryBuilder {
-  func `where`<Value: Equatable>(
+  public func `where`<Value: Equatable>(
     _ keyPath: KeyPath<T, Value>,
     isEqualTo value: Value
   ) -> QueryBuilder<T> {
@@ -46,7 +46,7 @@ extension QueryBuilder {
     return self
   }
   
-  func `where`<Value: Comparable>(
+  public func `where`<Value: Comparable>(
     _ keyPath: KeyPath<T, Value>,
     isLessThan value: Value
   ) -> QueryBuilder<T> {
@@ -59,7 +59,7 @@ extension QueryBuilder {
   }
   
   
-  func `where`<Value: Comparable>(
+  public func `where`<Value: Comparable>(
     _ keyPath: KeyPath<T, Value>,
     isLessThanOrEqualTo value: Value
   ) -> QueryBuilder<T> {
@@ -71,7 +71,7 @@ extension QueryBuilder {
     return self
   }
   
-  func `where`<Value: Comparable>(
+  public func `where`<Value: Comparable>(
     _ keyPath: KeyPath<T, Value>,
     isGreaterThan value: Value
   ) -> QueryBuilder<T> {
@@ -83,7 +83,7 @@ extension QueryBuilder {
     return self
   }
   
-  func `where`<Value: Comparable>(
+  public func `where`<Value: Comparable>(
     _ keyPath: KeyPath<T, Value>,
     isGreaterThanOrEqualTo value: Value
   ) -> QueryBuilder<T> {
@@ -107,7 +107,7 @@ extension QueryBuilder {
     return self
   }
   
-  func `where`<Value: Equatable>(
+  public func `where`<Value: Equatable>(
     _ keyPath: KeyPath<T, [Value]>,
     arrayContainsAny values: [Value]
   ) -> QueryBuilder<T> {
@@ -119,7 +119,7 @@ extension QueryBuilder {
     return self
   }
   
-  func `where`<Value: Equatable>(
+  public func `where`<Value: Equatable>(
     _ keyPath: KeyPath<T, Value>,
     `in` values: [Value]
   ) -> QueryBuilder<T> {
@@ -135,7 +135,7 @@ extension QueryBuilder {
 // MARK: - Ordering Methods
 
 extension QueryBuilder {
-  func orderBy<Value: Comparable>(
+  public func orderBy<Value: Comparable>(
     _ keyPath: KeyPath<T, Value>,
     descending: Bool = false
   ) -> QueryBuilder<T> {
@@ -147,7 +147,7 @@ extension QueryBuilder {
     return self
   }
   
-  func limit(to limit: Int) -> QueryBuilder<T> {
+  public func limit(to limit: Int) -> QueryBuilder<T> {
     self.currentFirestoreQuery = currentFirestoreQuery.limit(to: limit)
     return self
   }
@@ -156,7 +156,7 @@ extension QueryBuilder {
 // MARK: - Fetching methods
 
 extension QueryBuilder {
-  func all() async throws -> [T] {
+  public func all() async throws -> [T] {
     do {
       let snapshot = try await currentFirestoreQuery.getDocuments()
       return try snapshot.documents.map {
@@ -167,11 +167,11 @@ extension QueryBuilder {
     }
   }
   
-  func first() async throws -> T? {
+  public func first() async throws -> T? {
     try await limit(to: 1).all().first
   }
   
-  func getByDocumentID(_ documentID: String) async throws -> T {
+  public func getByDocumentID(_ documentID: String) async throws -> T {
     do {
       let documentRef = Self.firestore.collection(T.collectionName).document(documentID)
       let snapshot = try await documentRef.getDocument()
@@ -193,7 +193,7 @@ extension QueryBuilder {
 
 extension QueryBuilder {
   @discardableResult
-  func set(_ data: T, documentID: String? = nil, merge: Bool = false) async throws -> DocumentReference {
+  public func set(_ data: T, documentID: String? = nil, merge: Bool = false) async throws -> DocumentReference {
     let id = documentID ?? Self.firestore.collection(T.collectionName).document().documentID
     let documentRef = Self.firestore.collection(T.collectionName).document(id)
     try await documentRef.setData(from: data, merge: merge)
@@ -201,19 +201,19 @@ extension QueryBuilder {
   }
   
   @discardableResult
-  func set(_ data: [String: Any], documentID: String? = nil, merge: Bool = false) async throws -> DocumentReference {
+  public func set(_ data: [String: Any], documentID: String? = nil, merge: Bool = false) async throws -> DocumentReference {
     let id = documentID ?? Self.firestore.collection(T.collectionName).document().documentID
     let documentRef = Self.firestore.collection(T.collectionName).document(id)
     try await documentRef.setData(data)
     return documentRef
   }
   
-  func update(_ fields: [PartialKeyPath<T>: Any], forDocumentID documentID: String) async throws {
+  public func update(_ fields: [PartialKeyPath<T>: Any], forDocumentID documentID: String) async throws {
     let documentRef = Self.firestore.collection(T.collectionName).document(documentID)
     try await documentRef.updateData(fields)
   }
   
-  func delete(documentID: String) async throws {
+  public func delete(documentID: String) async throws {
     let documentRef = Self.firestore.collection(T.collectionName).document(documentID)
     try await documentRef.delete()
   }
@@ -228,8 +228,10 @@ extension QueryBuilder {
   }
 }
 
+// MARK: - DocumentReference +
+
 extension DocumentReference {
-  func setData<T: Encodable>(from value: T, merge: Bool) async throws {
+  public func setData<T: Encodable>(from value: T, merge: Bool) async throws {
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
       do {
         try setData(from: value, merge: merge) { error in
